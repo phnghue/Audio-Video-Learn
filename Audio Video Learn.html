@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html style="background-color:#000">
+<body style="background-color:#000">
+<script>
+
+/* jSeeD.js 
+*
+*     By Phung Phan (phnghue@gmail.com)
+*
+*/
+
+// Basic function to play JS
+//
+// BROWSER VALUE
+//
+// browser.OS: browser platform
+// browser.touch: browser on touch device
+// browser.name: browser name
+// browser.version: browser version
+//
+//
+// EXTENSION WINDOW VARIABLE
+// 
+// window.clickMode: switch for mouse click mode
+// window.keyMOE : switch for change window.mouseOnElem
+// window.mouseOnElem : id of element have mouse over
+// window.lastClickOnElem : lastClickOnElem
+// 
+// EXTENSION ELEMENT VARIABLE
+//
+// Elem.mom: element contain elem
+//
+//
+// OTHER
+//
+// listElem: listAllElement use c()
+//
+//
+// FUNCTION
+// a(): animate
+// c(): create
+// e(): edit
+// g(): get
+// d(): do
+// f(): filter or fix
+//
+
+browser=new Object();
+function getBrowserInfo(){
+        var naus=navigator.userAgent, napl=navigator.platform, lnaus=naus.length;
+        function getVersion(sFind){
+                var s=naus.indexOf(sFind);k=0,z='';
+                browser.version='';
+                if (s!=-1){
+                        for (var i=s;i<lnaus;i++){
+                                z=naus.substring(i,i+1);
+                                if (z=='0' || z=='1' || z=='2' || z=='3' || z=='4' || z=='5' || z=='6' || z=='7' || z=='8' || z=='9' || z=='.'){
+                                        if (k==0){k=1}
+                                        browser.version+=z;
+                                }
+                                else if (k==1){break}
+                        }
+                }
+                return s
+        }
+        
+        if (getVersion('Firefox')!=-1){browser.name='Firefox'}
+        else if (getVersion('OPR')!=-1){browser.name='Opera'}
+        else if (getVersion('MSIE')!=-1){browser.name='Internet Explore'}
+        else if (getVersion('Chrome')!=-1){browser.name='Google Chrome'}
+        else if (getVersion('Safari')!=-1){browser.name='Safari'}
+        else {browser.name='Unknown';browser.version='Unknown'}
+        
+        if (napl.indexOf('Win')!=-1){browser.OS='Windows'}
+        else if (napl.indexOf('Linux')!=-1){browser.OS='Linux'}
+        else if (napl.indexOf('Mac')!=-1){browser.OS='Mac'}
+        else {browser.OS='Unknown'}
+        
+        browser.touch = (naus.indexOf("(iP")==-1 && naus.indexOf("Android")==-1 && naus.indexOf("BlackBerry")==-1 && naus.indexOf("HTC")==-1 && naus.indexOf("PlayBook")==-1 && naus.indexOf("webOS")==-1 && naus.indexOf("IEMobile")==-1 && naus.indexOf("Silk")==-1)?0:1;
+        return [browser.OS, browser.touch, browser.name, browser.version];
+}
+getBrowserInfo()
+
+window.screenDepth=0;
+
+function getVarType(v){
+        var z;
+        if (v==null){return 'Null'}
+        if (v.length!=null){//String, Array
+                if ((v+'').length!=v.length){return 'Array'}
+                if (v.length<2){
+                        v[2]=1;
+                        if (!v[2]){return 'String'}
+                        v[2]=z;return 'Array'
+                }
+                return 'String'
+        }
+        // NaN, Undefined, Number, Boolean, Object
+        z=v+'';
+        if (z=='NaN'){return z}
+        if (z=='undefined'){return 'Undefined'}
+        if (z=='true' || z=='false'){return 'Bolean'}
+        if (z=='[object Object]'){return 'Object'}
+        return 'Number'
+}
+function g(o,a){
+        //
+        //      o: object
+        //      a: attributes
+        //
+        //      ATTRIBUTES:
+        //              CARETPOSITION   : Caret position
+        //              X                               : Left
+        //              Y                               : Top
+        //              W                               : Width
+        //              H                               : Height
+        //              (CSS)                   : css 
+        //
+        
+        if (!a){return getVarType(o)}
+        else if (a.toUpperCase()=='CARETPOSITION'){
+                return (function doGetCaretPosition (Elem) {
+                        var Position = 0;
+                        // IE Support
+                        if (document.selection) {
+                                Elem.focus ();
+                                var Sel = document.selection.createRange();
+                                Sel.moveStart ('character', -Elem.value.length);
+                                Position = Sel.text.length;
+                        }
+                        // Firefox support
+                        else if (Elem.selectionStart || Elem.selectionStart == '0')
+                                Position = Elem.selectionStart;
+                        return (Position);
+                })(o);
+        }
+        else {
+                switch (a.toUpperCase()){
+                        case 'X': return o.offsetLeft;
+                        case 'Y': return o.offsetTop;
+                        case 'W': return o.clientWidth;
+                        case 'H': return o.clientHeight;
+                        
+                        default: return window.getComputedStyle(o,null).getPropertyValue(a);
+                }
+        }
+}
+function f(c,o,s){
+        // c: command
+        // o: object
+        // s: thing to do
+        //
+        // COMMAND:
+        //
+        // LIEV                 : list event
+        //
+        if (c.toUpperCase()=='LIEV' || c.toUpperCase()=='LISTEVENT'){
+                for (var i=0;i<o.length;i++){
+                        if (getVarType(o[i][0])=='String'){
+                                if (o[i][0]=='moov' || o[i][0]=='mouseover' || o[i][0]=='onmouseover'){o[i][0]=['mouseover','onmouseover']}
+                                else if (o[i][0]=='moou' || o[i][0]=='mouseout' || o[i][0]=='onmouseout'){o[i][0]=['mouseout','onmouseout']}
+                                else if (o[i][0]=='momo' || o[i][0]=='mousemove' || o[i][0]=='onmousemove'){o[i][0]=['mousemove','onmousemove']}
+                                else if (o[i][0]=='tomo' || o[i][0]=='touchmove' || o[i][0]=='ontouchmove'){o[i][0]=['touchmove','ontouchmove']}
+                                else if (o[i][0]=='modo' || o[i][0]=='mousedown' || o[i][0]=='onmousedown'){o[i][0]=['mousedown','onmousedown']}
+                                else if (o[i][0]=='tost' || o[i][0]=='touchstart' || o[i][0]=='ontouchstart'){o[i][0]=['touchstart','ontouchstart']}
+                                else if (o[i][0]=='moup' || o[i][0]=='mouseup' || o[i][0]=='onmouseup'){o[i][0]=['mouseup','onmouseup']}
+                                else if (o[i][0]=='toen' || o[i][0]=='touchend' || o[i][0]=='ontouchend'){o[i][0]=['touchend','ontouchend']}
+                                else if (o[i][0]=='mocl' || o[i][0]=='onclick'){o[i][0]=['click','onclick']}
+                                else if (o[i][0]=='modb' || o[i][0]=='ondblclick'){o[i][0]=['dblclick','ondblclick']}
+                        }
+                }
+                return o
+        }
+}
+function d(c,o,s){
+        // c: command
+        // o: object
+        // s: thing to do
+        //
+        // COMMAND:
+        // NUM?                         : object is number ?
+        // DIV                          : div o/s
+        // MOD                          : mod o/s
+        // PX                           : remove 'px'
+        // %                            : remove '%'
+        // ELEM                         : take element
+        // SETTRANSFORM         : set transform
+        // EVENT                        : add event listener
+        // MULTIEVENT           : add multi event listener
+        // READKEY                      : read keypress
+        // EXPANDVALUE          : expand object attributes
+        //
+        if (c.toUpperCase()=='NUM?'){
+                if (o.length==null){return 1}
+                if ((o*2+'')!='NaN'){return 1}
+                return 0
+        }
+        else if (c.toUpperCase()=='DIV'){
+                return Math.floor(o/s);
+        }
+        else if (c.toUpperCase()=='MOD'){
+                return (o-Math.floor(o/s)*s);
+        }
+        else if (c.toUpperCase()=='PX'){
+                if (d('num?',o)==1){return o}
+                return o.substring(0,o.length-2)
+        }
+        else if (c.toUpperCase()=='%'){
+                if (d('num?',o)==1){return o}
+                return o.substring(0,o.length-1)
+        }
+        else if (c.toUpperCase()=='ELEM' || c.toUpperCase()=='ELEMENT'){
+                if (getVarType(o)=='String'){return document.getElementById(o)}
+                return o;
+        }
+        
+        else if (c.toUpperCase()=='TRFO' || c.toUpperCase()=='SETTRANSFORM'){
+                o.style.webkitTransform=s;
+                o.style.mozTransform=s;
+                o.style.msTransform=s;
+                o.style.oTransform=s;
+                o.style.transform=s;
+        }
+        else if (c.toUpperCase()=='PEPE' || c.toUpperCase()=='SETPERSPECTIVE'){
+                o.style.webkitPerspective=s;
+                o.style.mozPerspective=s;
+                o.style.msPerspective=s;
+                o.style.oPerspective=s;
+                o.style.perspective=s;
+        }
+        else if (c.toUpperCase()=='EVENT'){
+                (function addEvent(Elem,type,run){
+                        var typeEvent=[];
+                        if (getVarType(type)=='String'){typeEvent=[type,type]} else {typeEvent=type}
+                        if (!typeEvent[0]){typeEvent[0]=typeEvent[1]} else if (!typeEvent[1]){typeEvent[1]=typeEvent[0]}
+                        if (Elem.addEventListener) {  // all browsers except IE before version 9
+                                //Elem.addEventListener (typeEvent[0], function (event) {run (event,Elem)}, false);
+                                Elem.addEventListener (typeEvent[0], run, false);
+                        }
+                        else {
+                                if (Elem.attachEvent) {   // IE before version 9
+                                        //Elem.attachEvent (typeEvent[1], function (event) {run (event,Elem)});
+                                        Elem.attachEvent (typeEvent[1], run);
+                                }
+                        }
+                })(o,s[0],s[1]);
+        }
+        else if (c.toUpperCase()=='MUEV' || c.toUpperCase()=='MULTIEVENT'){
+                function addEvent(Elem,type,run){
+                        var typeEvent=[];
+                        if (getVarType(type)=='String'){typeEvent=[type,type]} else {typeEvent=type}
+                        if (!typeEvent[0]){typeEvent[0]=typeEvent[1]} else if (!typeEvent[1]){typeEvent[1]=typeEvent[0]}
+                        if (Elem.addEventListener) {  // all browsers except IE before version 9
+                                Elem.addEventListener (typeEvent[0], run, false);
+                        }
+                        else {
+                                if (Elem.attachEvent) {   // IE before version 9
+                                        Elem.attachEvent (typeEvent[1], run);
+                                }
+                        }
+                }
+                for (var i=0;i<s.length;i++){
+                        addEvent(o,s[i][0],s[i][1]);
+                }
+        }
+        else if (c.toUpperCase()=='READKEY'){
+                return (function readKey(e,run){
+                        // e: event
+                        // run: function(key){}
+                        // EX: document.body.onkeypress=function(){d('readKey',event,function(key){alert(key)})}
+                        var keynum;
+                        if (window.event){ // IE                                        
+                                keynum = e.keyCode;
+                        }
+                        else{
+                                if(e.which){ // Netscape/Firefox/Opera                                  
+                                        keynum = e.which;
+                                }
+                        }
+                        if (run){run(String.fromCharCode(keynum));}
+                        return String.fromCharCode(keynum);
+                })(o,s);
+        }
+        else if (c.toUpperCase()=='EXVA' || c.toUpperCase()=='EXPANDVALUE'){
+                for (var i=0;i<s.length;i++){
+                        if (getVarType(s[i][1]=='String')){eval('o.'+s[i][0]+'=s[i][1]');}
+                        else{eval('o.'+s[i][0]+'='+s[i][1]);}
+                }
+        }
+        else if (c.toUpperCase()=='NEXTDEPTH'){
+                window.screenDepth+=1;
+                return window.screenDepth;
+        }
+        else if (c.toUpperCase()=='CARETPOSI' || c.toUpperCase()=='SETCARETPOSITION'){
+                (function setCaretPosition(Elem, Position){
+                        if (Elem.setSelectionRange){
+                                Elem.focus();
+                                Elem.setSelectionRange(Position,Position);
+                        }
+                        else if (Elem.createTextRange) {
+                                var range = Elem.createTextRange();
+                                range.collapse(true);
+                                range.moveEnd('character', Position);
+                                range.moveStart('character', Position);
+                                range.select();
+                        }
+                })(o,s);
+        }
+        else if (c.toUpperCase()=='SETSELECT' || c.toUpperCase()=='SETSELECTION'){
+                (function setSelection(value,Elem,fullMode){
+                        var value0=value, value1=value;
+                        if (value0=='text'){value0='default'}
+                        if (fullMode){
+                                for (var i=0;i<listElem.length;i++){
+                                        if (listElem[i]){
+                                                listElem[i].style.webkitTouchCallout=value0;
+                                                listElem[i].style.webkitUserSelect=value1;
+                                                listElem[i].style.khtmlUserSelect=value1;
+                                                listElem[i].style.mozUserSelect=value1;
+                                                listElem[i].style.msUserSelect=value1;
+                                                listElem[i].style.userSelect=value1;
+                                        }
+                                }
+                        }
+                        else{
+                                if (!Elem){Elem=document.body}
+                                Elem.style.webkitTouchCallout=value0;
+                                Elem.style.webkitUserSelect=value1;
+                                Elem.style.khtmlUserSelect=value1;
+                                Elem.style.mozUserSelect=value1;
+                                Elem.style.msUserSelect=value1;
+                                Elem.style.userSelect=value1;
+                        }
+                })(s[0],o,s[1])
+        }
+        else {dDevelop(c,o,s)}
+        
+        
+        
+        
+        
+}
+
+
+
+function e(o,a){
+        // o: object
+        // a: arrayData
+        //
+        for (var i=0;i<a.length;i++){if (a[i] && a[i][0] && a[i][1]!=null){
+                if (a[i][0]=='id'){o.id=a[i][1]}
+                else if (a[i][0]=='type'){o.type=a[i][1]}
+                else if (a[i][0]=='src'){o.src=a[i][1]}
+                else if (a[i][0]=='onlo' || a[i][0]=='onload'){o.onload=a[i][1]}
+                
+                // CSS
+                
+                else if (a[i][0]=='dipl' || a[i][0]=='display'){o.style.display=a[i][1]}
+                else if (a[i][0]=='zi' || a[i][0]=='zIndex'){o.style.zIndex=a[i][1]}
+                
+                else if (a[i][0]=='wowr' || a[i][0]=='wordWrap'){o.style.wordWrap=a[i][1]}
+                else if (a[i][0]=='wobr' || a[i][0]=='wordBreak'){o.style.wordBreak=a[i][1]}
+                else if (a[i][0]=='ovfl' || a[i][0]=='overflow'){o.style.overflow=a[i][1]}
+                else if (a[i][0]=='ovflx' || a[i][0]=='overflowX'){o.style.overflowX=a[i][1]}
+                
+                else if (a[i][0]=='posi' || a[i][0]=='position'){o.style.position=a[i][1]}
+                else if (a[i][0]=='x' || a[i][0]=='left'){o.style.left=a[i][1]}
+                else if (a[i][0]=='y' || a[i][0]=='top'){o.style.top=a[i][1]}
+                
+                else if (a[i][0]=='w' || a[i][0]=='width'){o.style.width=a[i][1]}
+                else if (a[i][0]=='h' || a[i][0]=='height'){o.style.height=a[i][1]}
+                else if (a[i][0]=='maw' || a[i][0]=='maxWidth'){o.style.maxWidth=a[i][1]}
+                else if (a[i][0]=='mah' || a[i][0]=='maxHeight'){o.style.maxHeight=a[i][1]}
+                else if (a[i][0]=='caw' || a[i][0]=='canvasWidth'){o.width=a[i][1]}
+                else if (a[i][0]=='cah' || a[i][0]=='canvasHeight'){o.height=a[i][1]}
+
+                else if (a[i][0]=='ma' || a[i][0]=='margin'){o.style.margin=a[i][1]}
+                else if (a[i][0]=='male' || a[i][0]=='marginLeft'){o.style.marginLeft=a[i][1]}
+                else if (a[i][0]=='mato' || a[i][0]=='marginTop'){o.style.marginTop=a[i][1]}
+                else if (a[i][0]=='mari' || a[i][0]=='marginRight'){o.style.marginRight=a[i][1]}
+                else if (a[i][0]=='mabo' || a[i][0]=='marginBottom'){o.style.marginBottom=a[i][1]}
+                else if (a[i][0]=='pale' || a[i][0]=='paddingLeft'){o.style.paddingLeft=a[i][1]}
+                else if (a[i][0]=='pato' || a[i][0]=='paddingTop'){o.style.paddingTop=a[i][1]}
+                else if (a[i][0]=='pari' || a[i][0]=='paddingRight'){o.style.paddingRight=a[i][1]}
+                else if (a[i][0]=='pabo' || a[i][0]=='paddingBottom'){o.style.paddingBottom=a[i][1]}
+                
+                
+                else if (a[i][0]=='float'){o.style.float=a[i][1]}
+                else if (a[i][0]=='align'){o.style.align=a[i][1]}
+                else if (a[i][0]=='teal' || a[i][0]=='textAlign'){o.style.textAlign=a[i][1]}
+                
+                
+                else if (a[i][0]=='bacolo' || a[i][0]=='backgroundColor'){o.style.backgroundColor=a[i][1]}
+                else if (a[i][0]=='colo' || a[i][0]=='color'){o.style.color=a[i][1]}
+                else if (a[i][0]=='bosh' || a[i][0]=='boxShadow'){o.style.boxShadow=a[i][1]}
+                
+                else if (a[i][0]=='bode' || a[i][0]=='boder'){o.style.border=a[i][1]}
+                else if (a[i][0]=='bowi' || a[i][0]=='borderWidth'){o.style.borderWidth=a[i][1]}
+                else if (a[i][0]=='bost' || a[i][0]=='borderStyle'){o.style.borderStyle=a[i][1]}
+                else if (a[i][0]=='boco' || a[i][0]=='borderColor'){o.style.borderColor=a[i][1]}
+                else if (a[i][0]=='boto' || a[i][0]=='borderTop'){o.style.borderTop=a[i][1]}
+                else if (a[i][0]=='bole' || a[i][0]=='borderLeft'){o.style.borderLeft=a[i][1]}
+                else if (a[i][0]=='bori' || a[i][0]=='borderRight'){o.style.borderRight=a[i][1]}
+                else if (a[i][0]=='bobo' || a[i][0]=='borderBottom'){o.style.borderBottom=a[i][1]}
+                else if (a[i][0]=='botowi' || a[i][0]=='borderTopWidth'){o.style.borderTopWidth=a[i][1]}
+                else if (a[i][0]=='bolewi' || a[i][0]=='borderLeftWidth'){o.style.borderLeftWidth=a[i][1]}
+                else if (a[i][0]=='boriwi' || a[i][0]=='borderRightWidth'){o.style.borderRightWidth=a[i][1]}
+                else if (a[i][0]=='bobowi' || a[i][0]=='borderBottomWidth'){o.style.borderBottomWidth=a[i][1]}
+                else if (a[i][0]=='botoco' || a[i][0]=='borderTopColor'){o.style.borderTopColor=a[i][1]}
+                else if (a[i][0]=='boleco' || a[i][0]=='borderLeftColor'){o.style.borderLeftColor=a[i][1]}
+                else if (a[i][0]=='borico' || a[i][0]=='borderRightColor'){o.style.borderRightColor=a[i][1]}
+                else if (a[i][0]=='boboco' || a[i][0]=='borderBottomColor'){o.style.borderBottomColor=a[i][1]}
+                else if (a[i][0]=='bora' || a[i][0]=='borderRadius'){o.style.borderRadius=a[i][1]}
+                else if (a[i][0]=='ouli' || a[i][0]=='outline'){o.style.outline=a[i][1]}
+                else if (a[i][0]=='oulist' || a[i][0]=='outlineStyle'){o.style.outlineStyle=a[i][1]}
+                else if (a[i][0]=='ouliwi' || a[i][0]=='outlineWidth'){o.style.outlineWidth=a[i][1]}
+                else if (a[i][0]=='oulico' || a[i][0]=='outlineColor'){o.style.outlineColor=a[i][1]}
+                else if (a[i][0]=='ouliof' || a[i][0]=='outlineOffset'){o.style.outlineOffset=a[i][1]}
+                
+                
+                else if (a[i][0]=='value'){o.value=a[i][1]}
+                else if (a[i][0]=='inte' || a[i][0]=='innerText'){o.innerText=a[i][1]}
+                else if (a[i][0]=='teco' || a[i][0]=='textContent'){o.textContent=a[i][1]}
+                else if (a[i][0]=='inht' || a[i][0]=='innerHTML'){o.innerHTML=a[i][1]}
+                
+                else if (a[i][0]=='fosi' || a[i][0]=='fontSize'){o.style.fontSize=a[i][1]}
+                else if (a[i][0]=='lihe' || a[i][0]=='lineHeight'){o.style.lineHeight=a[i][1]}
+                else if (a[i][0]=='fowe' || a[i][0]=='fontWeight'){o.style.fontWeight=a[i][1]}
+                else if (a[i][0]=='fost' || a[i][0]=='fontStyle'){o.style.fontStyle=a[i][1]}
+                else if (a[i][0]=='fofa' || a[i][0]=='fontFamily'){o.style.fontFamily=a[i][1]}
+                else if (a[i][0]=='tede' || a[i][0]=='textDecoration'){o.style.textDecoration=a[i][1]}
+                else if (a[i][0]=='tesh' || a[i][0]=='textShadow'){o.style.textShadow=a[i][1]}
+                else if (a[i][0]=='lesp' || a[i][0]=='letterSpacing'){o.style.letterSpacing=a[i][1]}
+                
+                else if (a[i][0]=='cuso' || a[i][0]=='cursor'){o.style.cursor=a[i][1]}
+                
+                else if (a[i][0]=='trfo' || a[i][0]=='transform'){d('TRFO',o,a[i][1]);}
+                else if (a[i][0]=='matr' || a[i][0]=='matrix'){d('TRFO',o,'matrix('+a[i][1][0]+','+a[i][1][1]+','+a[i][1][2]+','+a[i][1][3]+','+a[i][1][4]+','+a[i][1][5]+')');}
+                else if (a[i][0]=='matr3d' || a[i][0]=='matrix3d'){d('TRFO',o,'matrix3d('+a[i][1][0]+','+a[i][1][1]+','+a[i][1][2]+','+a[i][1][3]+','+a[i][1][4]+','+a[i][1][5]+','+a[i][1][6]+','+a[i][1][7]+','+a[i][1][8]+','+a[i][1][9]+','+a[i][1][10]+','+a[i][1][11]+','+a[i][1][12]+','+a[i][1][13]+','+a[i][1][14]+','+a[i][1][15]+')');                       }
+                else if (a[i][0]=='trla' || a[i][0]=='translate'){d('TRFO',o,'translate('+a[i][1][0]+','+a[i][1][1]+')');}
+                else if (a[i][0]=='trla3d' || a[i][0]=='translate3d'){d('TRFO',o,'translate3d('+a[i][1][0]+','+a[i][1][1]+','+a[i][1][2]+')');}
+                else if (a[i][0]=='trlaX' || a[i][0]=='translateX'){d('TRFO',o,'translateX('+a[i][1]+')');}
+                else if (a[i][0]=='trlaY' || a[i][0]=='translateY'){d('TRFO',o,'translateY('+a[i][1]+')');}
+                else if (a[i][0]=='trlaZ' || a[i][0]=='translateZ'){d('TRFO',o,'translateZ('+a[i][1]+')');}
+                else if (a[i][0]=='rota' || a[i][0]=='rotate'){d('TRFO',o,'rotate('+a[i][1]+')');}
+                else if (a[i][0]=='rota3d' || a[i][0]=='rotate3d'){d('TRFO',o,'rotate3d('+a[i][1][0]+','+a[i][1][1]+','+a[i][1][2]+','+a[i][1][3]+')');}
+                else if (a[i][0]=='rotaX' || a[i][0]=='rotateX'){d('TRFO',o,'rotateX('+a[i][1]+')');}
+                else if (a[i][0]=='rotaY' || a[i][0]=='rotateY'){d('TRFO',o,'rotateY('+a[i][1]+')');}
+                else if (a[i][0]=='rotaZ' || a[i][0]=='rotateZ'){d('TRFO',o,'rotateZ('+a[i][1]+')');}
+                else if (a[i][0]=='skew'){d('TRFO',o,'skew('+a[i][1][0]+','+a[i][1][1]+')');}
+                else if (a[i][0]=='skewX'){d('TRFO',o,'skewX('+a[i][1]+')');}
+                else if (a[i][0]=='skewY'){d('TRFO',o,'skewY('+a[i][1]+')');}
+                else if (a[i][0]=='pepe' || a[i][0]=='perspective'){d('PEPE',o,a[i][1])}
+                
+                else if (a[i][0]=='momo' || a[i][0]=='onmousemove'){o.onmousemove=a[i][1]}
+                else if (a[i][0]=='tomo' || a[i][0]=='ontouchmove'){o.ontouchmove=a[i][1]}
+                else if (a[i][0]=='moov' || a[i][0]=='onmouseover'){o.onmouseover=a[i][1]}
+                else if (a[i][0]=='moou' || a[i][0]=='onmouseout'){o.onmouseout=a[i][1]}
+                else if (a[i][0]=='modo' || a[i][0]=='onmousedown'){o.onmousedown=a[i][1]}
+                else if (a[i][0]=='tost' || a[i][0]=='ontouchstart'){o.ontouchstart=a[i][1]}
+                else if (a[i][0]=='moup' || a[i][0]=='onmouseup'){o.onmouseup=a[i][1]}
+                else if (a[i][0]=='toen' || a[i][0]=='ontouchend'){o.ontouchend=a[i][1]}
+                else if (a[i][0]=='mocl' || a[i][0]=='onclick'){o.onclick=a[i][1]}
+                else if (a[i][0]=='modb' || a[i][0]=='ondblclick'){o.ondblclick=a[i][1]}
+                
+                else if (a[i][0]=='kepr' || a[i][0]=='onkeypress'){o.onkeypress=a[i][1]}
+                else {eDevelop(o,a)}
+        }}
+}
+
+window.keyMOE=0;
+window.mouseOnElem='body';
+var listElem=[];
+function c (addTo, id, type, data){
+        var ETemp=document.createElement(type);
+        if (id){ETemp.id=id;}
+        addTo.appendChild(ETemp);
+        ETemp.mom=addTo;
+        e(ETemp,data);
+        d('event',ETemp,[['mouseover','onmouseover'], function(){if (window.keyMOE==0){window.mouseOnElem=ETemp.id;window.keyMOE=1;setTimeout(function(){window.keyMOE=0;},1);}}]);
+        d('event',ETemp,[['mouseout','onmouseout'], function(){if (window.keyMOE==0){setTimeout(function(){if (window.mouseOnElem==ETemp.id && window.keyMOE==0){window.mouseOnElem='body';window.keyMOE==1}},1);}}]);
+        listElem.push(ETemp);
+        return ETemp;
+}
+d('event',document,[['mousedown','onmousedown'],function(){window.lastClickOnElem=window.mouseOnElem;}]);
+d('event',document,[['touchstart','ontouchstart'],function(){window.lastClickOnElem=ETemp.id;}]);
+        
+function a(s, o, d){
+        // s: style
+        // o: object
+        // d: data
+        if (s.toUpperCase=='FADE'){
+                
+        }
+        
+        else {aDevelop(s,o,d)}
+}
+// DEVELOP
+
+function dDevelop(c,o,s){
+        /*if (c.toUpperCase()=='ELEM' || c.toUpperCase()=='ELEMENT'){
+                if (getVarType(o)=='String'){return document.getElementById(o)}
+                return o;
+        }
+        else if (c.toUpperCase()=='ELEM' || c.toUpperCase()=='ELEMENT'){
+                if (getVarType(o)=='String'){return document.getElementById(o)}
+                return o;
+        }*/
+}
+
+function eDevelop(o,a){
+        /*else if (a[i][0]=='moup' || a[i][0]=='onmouseup'){o.onmouseup=a[i][1]}
+        else if (a[i][0]=='mocl' || a[i][0]=='onclick'){o.onclick=a[i][1]}
+        */
+}
+function aDevelop(s,o,d){
+        
+}
+
+</script>
+
+
+
+
+
+<script>
+var AVScr=c(document.body,'','video',[['posi','fixed'],['x','2%'],['y','2%'],['w','96%'],['h','50%'],['src','Test.wav'],['bacolo','transparent'],['ouli','1px solid #aaa']]);
+AVScr.controls=true;
+var Menu=c(document.body,'','div',[['teal','center'],['posi','fixed'],['x','2%'],['y','52%'],['w','96%'],['h','8%'],['bacolo','#444'],['ouli','1px solid #aaa']]);
+var SW=Menu.clientWidth;
+var S0=Menu.clientHeight;
+var S1=S0*0.4;
+var S2=S0*0.6;
+var S3=S2-S1;
+var Load=c(Menu,'','div',[['posi','absolute'],['x',SW*0.28+'px'],['y',S0*0.2+'px'],['h','0%'],['bacolo','transparent']]);
+Load.title='Load';
+Load.style.width=S1+'px';
+Load.style.border=S2+'px solid #aaa';
+Load.style.borderStyle='none solid solid solid';
+Load.style.borderLeft=S3+'px solid transparent';
+Load.style.borderRight=S3+'px solid transparent';
+Load.onclick=function(){
+  var Q=prompt('File Name:',AVScr.src);
+  if (Q){firstLoad=0;AVScr.src=Q;}
+}
+
+var Play=c(Menu,'','div',[['posi','absolute'],['x',SW*0.1+'px'],['y',S0*0.2+'px'],['w','0px'],['h','0px'],['bode',(S2/2)+'px double #aaa']]);
+Play.title='Set Repeat Start Point';
+Play.style.borderColor='transparent transparent transparent #fff';
+Play.style.borderLeftWidth=S2*0.8+'px';
+Play.style.borderRightWidth='0px';
+Play.onclick=function(){if (AVScr.paused){AVScr.play();}else{AVScr.pause();}}// this.style.borderLeftColor='#fff'
+
+var Stop=c(Menu,'','div',[['posi','absolute'],['x',SW*0.16+'px'],['y',S0*0.2+'px'],['w',S2+'px'],['h',S2+'px'],['bacolo','#aaa']]);
+Stop.title='Repeat';
+Stop.value=0;
+Stop.onclick=function(){AVScr.pause(); AVScr.currentTime=0;}
+
+var Repeat=c(Menu,'','div',[['posi','absolute'],['x',SW*0.6+'px'],['y',S0*0.2+'px'],['w',S2+'px'],['h',S2+'px'],['bora','1000px'],['bacolo','#aaa']]);
+Repeat.title='Repeat';
+Repeat.value=0;
+AVScr.loop=false;
+Repeat.onclick=function(){
+  if (this.value==0){this.value=1; AVScr.loop=true; this.style.backgroundColor='#fff'}
+  else {this.value=0; AVScr.loop=false; this.style.backgroundColor='#aaa'}
+}
+
+var Setting=c(Menu,'','div',[['posi','absolute'],['x',SW*0.68+'px'],['y',S0*0.2+'px'],['w',S2+'px'],['h',S2+'px'],['bora','50% 0% 50% 0%'],['bacolo','#aaa']]);
+Setting.title='Resolution Setting';
+Setting.valueN=3;
+Setting.onclick=function(){
+  var Q=prompt('Resolution:',Setting.valueN);
+  if (Q*1+''!='NaN'){Setting.valueN=Q*1;runLoadTrack()}
+}
+
+var modeSet=1;
+
+var StartA=c(Menu,'','div',[['posi','absolute'],['x',SW*0.36+'px'],['y',S0*0.2+'px'],['w',S0*0.2+'px'],['h',S0*0.2+'px'],['bacolo','transparent'],['bode',S0*0.2+'px solid #444']]);
+StartA.title='Set Repeat Start Point';
+StartA.style.borderLeftWidth=S0*0.4+'px';
+StartA.value=0;
+StartA.onclick=function(){
+  modeSet=0;
+  StartA.style.borderLeftColor='#fff';
+  StartCr.style.backgroundColor='#aaa';StartCr.style.borderColor='#aaa #444 #aaa #444'
+  StartB.style.borderRightColor='#aaa';
+}
+
+var StartCr=c(Menu,'','div',[['posi','absolute'],['x',SW*0.42+'px'],['y',S0*0.2+'px'],['w',S0*0.2+'px'],['h',S0*0.2+'px'],['bacolo','#aaa'],['bode',S0*0.2+'px solid #aaa']]);
+StartCr.title='Set Cursor';
+StartCr.style.borderColor='#aaa #444 #aaa #444';
+StartCr.value=0;
+StartCr.onclick=function(){
+  modeSet=1;
+  StartA.style.borderLeftColor='#aaa';
+  StartCr.style.backgroundColor='#fff';StartCr.style.borderColor='#fff #444 #fff #444'
+  StartB.style.borderRightColor='#aaa';
+}
+
+
+var StartB=c(Menu,'','div',[['posi','absolute'],['x',SW*0.465+'px'],['y',S0*0.2+'px'],['w',S0*0.2+'px'],['h',S0*0.2+'px'],['bacolo','transparent'],['bode',S0*0.2+'px solid #444']]);
+StartB.title='Set Repeat End Point';
+StartB.style.borderRightWidth=S0*0.4+'px';
+StartB.value=0;
+StartB.onclick=function(){
+  modeSet=2;
+  StartA.style.borderLeftColor='#aaa';
+  StartCr.style.backgroundColor='#aaa';StartCr.style.borderColor='#aaa #444 #aaa #444'
+  StartB.style.borderRightColor='#fff';
+}
+StartCr.onclick();
+
+var SetPause=c(Menu,'','div',[['posi','absolute'],['x',SW*0.54+'px'],['y',S0*0.2+'px'],['w','0px'],['h','0px'],['bode',(S2/2)+'px solid #aaa'],['bora','30%']]);
+SetPause.title='Auto Pause'
+SetPause.style.borderLeftColor='transparent';
+SetPause.value=0;
+SetPause.onclick=function(){
+  if (this.value==0){this.value=1; this.style.borderColor='#fff #fff #fff transparent'}
+  else {this.value=0; this.style.borderColor='#aaa #aaa #aaa transparent'}
+}
+
+function launchFullScreen(n,element) {
+	if ((element+'').toUpperCase()=='ALL'){element=document.documentElement;}
+	if (n==1){
+		if(document.documentElement.requestFullScreen) {
+			element.requestFullScreen();
+		} 
+		else if(element.mozRequestFullScreen) {
+			element.mozRequestFullScreen();
+		} 
+		else if(element.webkitRequestFullScreen) {
+			element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+		}
+		else if(element.msRequestFullScreen) {
+			element.msRequestFullScreen();
+		} 
+	} 
+	else {
+		if(document.cancelFullScreen) {
+			document.cancelFullScreen();
+		} 
+		else if(document.mozCancelFullScreen) {
+			document.mozCancelFullScreen();
+		} 
+		else if(document.webkitCancelFullScreen) {
+			document.webkitCancelFullScreen();
+		}
+		else if(document.msCancelFullScreen) {
+			document.msCancelFullScreen();
+		}
+	}
+}
+
+var FullScreen=c(Menu,'','div',[['posi','absolute'],['x',SW*0.78+'px'],['y',S0*0.2+'px'],['w',S0*0.2+'px'],['h',S0*0.2+'px'],['bacolo','transparent'],['bode',S0*0.2+'px solid #aaa']]);
+FullScreen.title='Full Screen';
+FullScreen.style.borderColor='#aaa transparent #aaa transparent'
+FullScreen.value=0;
+FullScreen.onclick=function(){
+  if (this.value==0){this.value=1; launchFullScreen(1,'ALL'); this.style.borderColor='#fff transparent #fff transparent'}
+  else {this.value=0; launchFullScreen(0,'ALL'); this.style.borderColor='#aaa transparent #aaa transparent'}
+}
+
+
+var Info=c(Menu,'','div',[['posi','absolute'],['x',SW*0.84+'px'],['y',S0*0.2+'px'],['w',S0*0.2+'px'],['h',S0*0.2+'px'],['bacolo','transparent'],['bode',S0*0.2+'px double #aaa'],['bora','100%']]);
+Info.title='Information';
+Info.style.borderColor='#aaa #444 #aaa #aaa'
+Info.onclick=function(){alert(
+  '--- Introduction ---'+String.fromCharCode(10)+
+  '  Audio Video Learn is a free open source web application software, help you learn from audio and video.'+String.fromCharCode(10)+
+    String.fromCharCode(10)+
+  'Menu Control: Play & Pause | Stop | Load | Set Repeat Start Point | Set Cursor Position | Set Repeat End Point | Auto Pause | Repeat | Resolution Setting | Full Screen | Information'+
+    String.fromCharCode(10)+
+    String.fromCharCode(10)+
+    String.fromCharCode(10)+
+ '--- License ---'+String.fromCharCode(10)+
+ 'Audio Video Learn - Audio and video learning'+String.fromCharCode(10)+
+ 'Copyright © 2014  Phung Phan '+String.fromCharCode(10)+'  + http://gdriv.es/phnghue/home.html'+String.fromCharCode(10)+'  + https://github.com/Phnghue'+String.fromCharCode(10)+'  + phnghue@gmail.com'+String.fromCharCode(10)+
+	String.fromCharCode(10)+
+ 'This file is part of Audio Video Learn.'+String.fromCharCode(10)+
+	String.fromCharCode(10)+
+ 'Audio Video Learn is free software: you can redistribute it and/or modify'+
+ 'it under the terms of the GNU General Public License as published by'+
+ 'the Free Software Foundation, either version 3 of the License, or'+
+ '(at your option) any later version.'+String.fromCharCode(10)+
+	String.fromCharCode(10)+
+ 'Audio Video Learn is distributed in the hope that it will be useful,'+
+ 'but WITHOUT ANY WARRANTY; without even the implied warranty of'+
+ 'MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the'+
+ 'GNU General Public License for more details.'+String.fromCharCode(10)+
+	String.fromCharCode(10)+
+ 'You should have received a copy of the GNU General Public License'+
+ 'along with Audio Video Learn.  If not, see http://www.gnu.org/licenses.'
+)}
+
+var LoadTrack=c(document.body,'','div',[['ovfl','auto'],['posi','fixed'],['x','2%'],['y','60%'],['w','96%'],['h','38%'],['bacolo','#222'],['ouli','1px solid #aaa']]);
+var TimA=0,TimB,TimC=0;
+//AVScr.width='auto';
+//AVScr.height='auto';
+var RRR='';
+var ET0='',ET1='',ETA='',ETB='',ETI0='',EI1='',ETCr='',ETIA='',ETIB='',ETICr='';
+var LET0=[];
+var AVLength=0,crTime=0;
+var ATime=[];
+var tMod0=0,tDiv0=0,tMod1=0,tDiv1=0,tMod2=0,tDiv2=0;
+var TimeJ=0;
+
+function windowPosi(){
+  var doc = document.documentElement;
+  var left = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+  var top = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
+ return [left,top];
+}
+
+function runLoadTrack(){
+  document.body.removeChild(LoadTrack)
+  LoadTrack=c(document.body,'','div',[['ovfl','auto'],['posi','fixed'],['x','2%'],['y','60%'],['w','96%'],['h','38%'],['bacolo','#222'],['ouli','1px solid #aaa']]);
+  
+  AVLength=AVScr.duration;
+  
+  TimeJ=AVLength/Setting.valueN;
+  var HueJ=360/Setting.valueN;
+  LET0=[];
+  for (var i=0;i<Setting.valueN;i++){
+    ET0=c(LoadTrack,'','div',[['posi','absolute'],['x','10%'],['mato',(4+(8)*i)+'%'],['w','80%'],['h','10%'],['bacolo','hsla('+HueJ*i+',100%,50%,0.3)'],['ouli','1px solid hsla('+HueJ*i+',100%,50%,1)']]);
+	ET0.valueMM=[TimeJ*i,TimeJ]
+	ET0.onmousedown=function(e){
+	  var MX=e.pageX-this.offsetLeft-LoadTrack.offsetLeft//-windowPosi()[0];
+	  if (modeSet==0){
+	    TimA=Math.round((this.valueMM[0]+this.valueMM[1]*(MX/this.clientWidth))*1000000)/1000000;
+	  }
+	  else if (modeSet==1){
+	    AVScr.currentTime=Math.round((this.valueMM[0]+this.valueMM[1]*(MX/this.clientWidth))*1000000)/1000000;
+		if (SetPause.value==0){AVScr.play();}
+        else {AVScr.pause();}
+	  }
+	  else{
+	    TimB=Math.round((this.valueMM[0]+this.valueMM[1]*(MX/this.clientWidth))*1000000)/1000000;
+	  }
+	}
+	ET0.ontouchstart=function(e){e.preventDefault();
+	  var MX=e.touches[0].pageX-this.offsetLeft-LoadTrack.offsetLeft//-windowPosi()[0];
+	  if (modeSet==0){
+	    TimA=Math.round((this.valueMM[0]+this.valueMM[1]*(MX/this.clientWidth))*1000000)/1000000;
+	  }
+	  else if (modeSet==1){
+	    AVScr.currentTime=Math.round((this.valueMM[0]+this.valueMM[1]*(MX/this.clientWidth))*1000000)/1000000;
+		if (SetPause.value==0){AVScr.play();}
+        else {AVScr.pause();}
+	  }
+	  else{
+	    TimB=Math.round((this.valueMM[0]+this.valueMM[1]*(MX/this.clientWidth))*1000000)/1000000;
+	  }
+	}
+	LET0[LET0.length]=ET0;
+	ET1=c(ET0,'','div',[['posi','absolute'],['x','0%'],['y','0%'],['w','0%'],['h','100%'],['bacolo','hsl('+HueJ*i+',100%,50%)']]);
+	ETI0=c(LoadTrack,'','div',[['posi','absolute'],['x','0%'],['mato',(4+(8)*i)+'%'],['w','10%'],['h','10%'],['inht','<table style="width:100%; height:100%"><tr><td style="text-align:center">'+Math.round(TimeJ*i*1000)/1000+'</td></tr></table>'],['fofa','courier'],['teal','center'],['colo','#fff'],['fosi','120%']]);
+	ETI1=c(LoadTrack,'','div',[['posi','absolute'],['x','90%'],['mato',(4+(8)*i)+'%'],['w','10%'],['h','10%'],['inht','<table style="width:100%; height:100%"><tr><td style="text-align:center">'+Math.round(TimeJ*(i+1)*1000)/1000+'</td></tr></table>'],['fofa','courier'],['teal','center'],['colo','#fff'],['fosi','120%']]);
+	ATime[ATime.length]=TimeJ*i;
+	ETCr=c(ET0,'','div',[['posi','absolute'],['x','0%'],['y','0%'],['w','1px'],['h','100%'],['bacolo','rgba(255,255,255,0.7)'],['dipl','none']]);
+	ETICr=c(ETCr,'','div',[['posi','absolute'],['teal','center'],['x','-50px'],['y','-50%'],['w','100px'],['fosi','100%'],['colo','hsl('+HueJ*i+',100%,50%)'],['fofa','courier']]);
+	ETA=c(ET0,'','div',[['posi','absolute'],['x','0%'],['y','0%'],['w','2px'],['h','100%'],['bacolo','#fff'],['dipl','none']]);
+	ETIA=c(ETA,'','div',[['posi','absolute'],['teal','center'],['x','-50px'],['y','-70%'],['w','100px'],['fosi','130%'],['colo','#fff'],['fofa','courier']]);
+	ETB=c(ET0,'','div',[['posi','absolute'],['x','0%'],['y','0%'],['w','2px'],['h','100%'],['bacolo','#fff'],['dipl','none']]);
+	ETIB=c(ETB,'','div',[['posi','absolute'],['teal','center'],['x','-50px'],['y','-70%'],['w','100px'],['fosi','130%'],['colo','#fff'],['fofa','courier']]);
+	ET0.conE0=ET1;
+	ET0.conE1=ETI0;
+	ET0.conE2=ETI1;
+	ET0.conE3=ETA;
+	ET0.conE4=ETB;
+	ET0.conE5=ETCr;
+	ET0.conE6=ETIA;
+	ET0.conE7=ETIB;
+	ET0.conE8=ETICr;
+  }
+  ATime[ATime.length]=TimeJ*i;
+
+  
+}
+//function loadDiplTrack(){
+var iW=window.innerWidth,iH=window.innerHeight,firstC=0;
+ RRR=setInterval(function(){
+ 
+   if (AVScr.paused){Play.style.borderLeftColor='#fff'; Stop.style.backgroundColor='#aaa'}
+   else{Play.style.borderLeftColor='#aaa'; Stop.style.backgroundColor='#fff'}
+   
+   if (TimA>TimB){TimC=TimA;TimA=TimB;TimB=TimC}
+  AVLength=AVScr.duration;
+  TimeJ=AVLength/Setting.valueN;
+  crTime=AVScr.currentTime;
+  tDiv0=Math.ceil(Math.max(1,TimA/TimeJ))-1;
+  tMod0=100*(TimA-tDiv0*TimeJ)/TimeJ;// At %
+  tDiv1=Math.ceil(TimB/TimeJ)-1;
+  tMod1=100*(TimB-tDiv1*TimeJ)/TimeJ;// At %
+  tDiv2=Math.ceil(crTime/TimeJ)-1;
+  tMod2=100*(crTime-tDiv2*TimeJ)/TimeJ;// At %
+  
+  for (var i=0;i<LET0.length;i++){
+    if (i==tDiv0){LET0[i].conE3.style.display='';LET0[i].conE3.style.left=tMod0+'%';LET0[i].conE6.textContent=TimA;}
+	else {LET0[i].conE3.style.display='none';}
+	if (i==tDiv1){LET0[i].conE4.style.display='';LET0[i].conE4.style.left=tMod1+'%';LET0[i].conE7.textContent=TimB;}
+	else {LET0[i].conE4.style.display='none';}
+	if (i==tDiv2){LET0[i].conE0.style.width=tMod2+'%'; LET0[i].conE5.style.display='';LET0[i].conE5.style.left=tMod2+'%';LET0[i].conE8.textContent=crTime;}
+	else if (i<tDiv2){LET0[i].conE0.style.width='100%'; LET0[i].conE5.style.display='none';}
+	else {LET0[i].conE0.style.width='0%'; LET0[i].conE5.style.display='none';}
+  }
+  if (crTime>=TimB && AVScr.loop==true){AVScr.currentTime=TimA}
+  
+  
+  // CHANGE SIZE
+if (iW!=window.innerWidth || iH!=window.innerHeight || firstC<10){if (firstC<10){firstC+=1;}
+  iW=window.innerWidth;iH=window.innerHeight;
+  
+  if (iW/iH<0.8){
+    e(Menu,[['y','52%'],['h','5%']]);
+	e(LoadTrack,[['y','57%'],['h','41%']]);
+  }
+  else {
+    e(Menu,[['y','52%'],['h','8%']]);
+	e(LoadTrack,[['y','60%'],['h','38%']]);
+  }
+
+  SW=Menu.clientWidth;
+  S0=Menu.clientHeight;
+  S1=S0*0.4;
+  S2=S0*0.6;
+  S3=S2-S1;
+  
+  AVScr.style.outlineWidth=(iW+iH)*0.0005+'px';
+  Menu.style.outlineWidth=(iW+iH)*0.0005+'px';
+  LoadTrack.style.outlineWidth=(iW+iH)*0.0005+'px';
+  LoadTrack.style.fontSize=(iW+iH)*0.05+'%';
+  
+  e(Load,[['x',SW*0.28+'px'],['y',S0*0.2+'px']]);
+  Load.style.width=S1+'px';
+  Load.style.borderWidth=S2+'px';
+  Load.style.borderLeftWidth=S3+'px';
+  Load.style.borderRightWidth=S3+'px';
+
+  e(Play,[['x',SW*0.1+'px'],['y',S0*0.2+'px']]);
+  Play.style.borderWidth=(S2/2)+'px';
+  Play.style.borderLeftWidth=S2*0.8+'px';
+
+  e(Stop,[['x',SW*0.16+'px'],['y',S0*0.2+'px'],['w',S2+'px'],['h',S2+'px']]);
+  e(Repeat,[['x',SW*0.6+'px'],['y',S0*0.2+'px'],['w',S2+'px'],['h',S2+'px']]);
+  e(Setting,[['x',SW*0.68+'px'],['y',S0*0.2+'px'],['w',S2+'px'],['h',S2+'px']]);
+  
+  e(StartA,[['x',SW*0.36+'px'],['y',S0*0.2+'px'],['w',S0*0.2+'px'],['h',S0*0.2+'px']]);
+  StartA.style.borderWidth=S0*0.2+'px';
+  StartA.style.borderLeftWidth=S0*0.4+'px';
+
+  e(StartCr,[['x',SW*0.42+'px'],['y',S0*0.2+'px'],['w',S0*0.2+'px'],['h',S0*0.2+'px']]);
+  StartCr.style.borderWidth=S0*0.2+'px';
+  
+  e(StartB,[['x',SW*0.465+'px'],['y',S0*0.2+'px'],['w',S0*0.2+'px'],['h',S0*0.2+'px']]);
+  StartB.style.borderWidth=S0*0.2+'px';
+  StartB.style.borderRightWidth=S0*0.4+'px';
+
+  e(SetPause,[['x',SW*0.54+'px'],['y',S0*0.2+'px']]);
+  SetPause.style.borderWidth=(S2/2)+'px';
+  
+  e(FullScreen,[['x',SW*0.78+'px'],['y',S0*0.2+'px'],['w',S0*0.2+'px'],['h',S0*0.2+'px']]);
+  FullScreen.style.borderWidth=S0*0.2+'px';
+  
+  e(Info,[['x',SW*0.84+'px'],['y',S0*0.2+'px'],['w',S0*0.2+'px'],['h',S0*0.2+'px']]);
+  Info.style.borderWidth=S0*0.2+'px';
+}
+
+ },10);
+//}
+var firstLoad=0;
+AVScr.oncanplaythrough=function(){
+  if (firstLoad==0){firstLoad=1;
+    this.currentTime=1000000000; setTimeout(function(){AVScr.currentTime=0;runLoadTrack();},500);
+  }
+  else{
+    runLoadTrack();
+  }
+}
+
+//Load.onclick();
+</script>
+
+</body>
+</html>
